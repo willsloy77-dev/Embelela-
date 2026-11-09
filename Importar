@@ -1,0 +1,52 @@
+
+name: Importar projecto Embele﻿la
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  importar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Obter projecto
+        uses: actions/checkout@v4
+
+      - name: Extrair ficheiros
+        run: |
+          archive="Embelela-Novo-Projecto-MVP.zip"
+
+          if [ ! -f "$archive" ]; then
+            echo "ZIP ainda não foi enviado."
+            exit 0
+          fi
+
+          mkdir -p /tmp/embelela-import
+          unzip -q "$archive" -d /tmp/embelela-import
+
+          if [ ! -d /tmp/embelela-import/Embelela ]; then
+            echo "Estrutura do ZIP inesperada."
+            exit 1
+          fi
+
+          cp -R /tmp/embelela-import/Embelela/. .
+          rm -f "$archive"
+
+      - name: Guardar ficheiros no GitHub
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "Sem alterações."
+            exit 0
+          fi
+
+          git commit -m "Importar projecto Embele﻿la MVP"
+          git push
